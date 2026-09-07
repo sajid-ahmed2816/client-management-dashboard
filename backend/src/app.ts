@@ -8,11 +8,25 @@ import projectRoutes from "./routes/project.routes.js";
 
 const app = express();
 
+const allowedOrigins = (process.env.FRONTEND_URLS ?? "").split(",")
+  .map((origin) => origin.trim()).filter(Boolean)
+
 app.use(helmet());
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      };
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      };
+      callback(new Error("not allowed by CORS"))
+    },
     credentials: true,
   })
 );

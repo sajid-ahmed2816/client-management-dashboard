@@ -12,13 +12,17 @@ import { formatZodError } from "../utils/formatZodError.js";
 import { sendResponse } from "../utils/sendResponse.js";
 import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const authCookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? ("none" as const) : ("lax" as const),
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 const setAuthCookie = (res: Response, token: string): void => {
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie("token", token, authCookieOptions);
 };
 
 export const signupController = async (
@@ -134,9 +138,9 @@ export const logoutController = (
   res: Response
 ): void => {
   res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    httpOnly: authCookieOptions.httpOnly,
+    secure: authCookieOptions.secure,
+    sameSite: authCookieOptions.sameSite,
   });
 
   sendResponse({
