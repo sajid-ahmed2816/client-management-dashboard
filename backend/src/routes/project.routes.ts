@@ -14,7 +14,7 @@ const router = Router();
 router.post("/", authMiddleware, upload.single("file"), createProjectController);
 router.get("/", authMiddleware, getProjectsController);
 router.get("/:id", authMiddleware, getProjectByIdController);
-router.patch("/:id", authMiddleware, upload.single("file"), updateProjectController);
+router.post("/:id/update", authMiddleware, upload.single("file"), updateProjectController);
 router.delete("/:id", authMiddleware, deleteProjectController);
 
 export default router;

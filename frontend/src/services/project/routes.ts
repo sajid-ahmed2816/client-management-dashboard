@@ -7,7 +7,7 @@ const routes: {
 } = {
   createProject: "/projects",
   getProjects: "/projects",
-  updateProject: (id: string) => `/projects/${id}`,
+  updateProject: (id: string) => `/projects/${id}/update`,
   deleteProject: (id: string) => `/projects/${id}`,
   getProjectById: (id: string) => `/projects/${id}`,
 };
