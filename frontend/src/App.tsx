@@ -25,6 +25,15 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Routes>
+        <Route
+          path="/"
+          element={
+            <Navigate
+              to={isAuthenticated ? "/dashboard" : "/login"}
+              replace
+            />
+          }
+        />
         <Route path="/" element={isAuthenticated ? <Navigate to={"/dashboard"} replace /> : <Outlet />}>
           {publicRoutes.map((route) => (
             <Route key={route.path} path={route.path} element={route.component} />
