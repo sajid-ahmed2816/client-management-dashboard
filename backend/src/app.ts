@@ -31,6 +31,9 @@ app.use(
   })
 );
 
+console.log("FRONTEND_URLS:", process.env.FRONTEND_URLS);
+console.log("Allowed Origins:", allowedOrigins);
+
 app.use(express.json());
 app.use(cookieParser());
 
