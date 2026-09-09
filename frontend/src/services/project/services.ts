@@ -18,7 +18,7 @@ const ProjectServices = {
   },
 
   updateProject: async (data: FormData, id: string) => {
-    const result = await patch(routes.updateProject(id), data);
+    const result = await post(routes.updateProject(id), data);
     return result;
   },
 
