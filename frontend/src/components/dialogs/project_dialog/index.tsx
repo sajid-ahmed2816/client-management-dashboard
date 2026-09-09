@@ -22,7 +22,7 @@ interface ProjectFormValues {
   description: string;
   status: string;
   clientId: string;
-  file?: File;
+  files: File[];
 };
 
 interface ProjectProps {
@@ -58,7 +58,7 @@ function ProjectDialog({
       description: "",
       status: "",
       clientId: "",
-      file: undefined,
+      files: [],
     },
   });
 
@@ -70,9 +70,10 @@ function ProjectDialog({
     payload.append("status", formData.status);
     payload.append("clientId", formData.clientId);
 
-    if (formData.file) {
-      payload.append("file", formData.file);
-    }
+    formData.files.forEach((file) => {
+      payload.append("files", file);
+    });
+
 
     const result = data
       ? await dispatch(
@@ -99,6 +100,7 @@ function ProjectDialog({
         description: data.description,
         status: data.status,
         clientId: data.client?.id,
+        files: [],
       });
     } else {
       reset({
@@ -107,9 +109,10 @@ function ProjectDialog({
         description: "",
         status: "",
         clientId: "",
+        files: [],
       });
     }
-  }, [data]);
+  }, [data, reset]);
 
   return (
     <Dialog
@@ -195,7 +198,7 @@ function ProjectDialog({
             />
 
             <Controller
-              name="file"
+              name="files"
               control={control}
               render={({ field }) => (
                 <Box>
@@ -206,53 +209,94 @@ function ProjectDialog({
                       mb: 1,
                     }}
                   >
-                    Project File
+                    Project Files
                   </Typography>
 
                   <input
                     type="file"
+                    multiple
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
+                      const newFiles = Array.from(e.target.files ?? []);
+                      const existingFiles = field.value ?? [];
 
-                      field.onChange(file);
+                      const mergedFiles = [...existingFiles, ...newFiles];
+
+                      const uniqueFiles = mergedFiles.filter(
+                        (file, index, self) =>
+                          index ===
+                          self.findIndex(
+                            (item) =>
+                              item.name === file.name &&
+                              item.size === file.size &&
+                              item.lastModified === file.lastModified
+                          )
+                      );
+
+                      field.onChange(uniqueFiles);
+
+                      e.target.value = "";
                     }}
                   />
 
                   {/* New selected file */}
-                  {field.value && (
-                    <Typography
-                      sx={{
-                        mt: 1,
-                        fontSize: "13px",
-                        color: colors.lightGray,
-                      }}
-                    >
-                      Selected: {field.value.name}
-                    </Typography>
-                  )}
-
-                  {/* Existing file */}
-                  {!field.value && data?.file && (
-                    <Typography
-                      sx={{
-                        mt: 1,
-                        fontSize: "13px",
-                        color: colors.lightGray,
-                      }}
-                    >
-                      Current file:{" "}
-                      <a
-                        href={data.file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: colors.primary,
-                          textDecoration: "none",
+                  {field.value?.length > 0 && (
+                    <Box sx={{ mt: 1 }}>
+                      <Typography
+                        sx={{
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          mb: 0.5,
                         }}
                       >
-                        {data.file.name}
-                      </a>
-                    </Typography>
+                        Selected files:
+                      </Typography>
+                      {field.value.map((file, index) => (
+                        <Typography
+                          key={`${file.name}-${index}`}
+                          sx={{
+                            fontSize: "13px",
+                            color: colors.lightGray,
+                          }}
+                        >
+                          • {file.name}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+
+                  {/* Existing files */}
+                  {data && data.files.length > 0 && (
+                    <Box
+                      sx={{ mt: 1 }}>
+                      <Typography
+                        sx={{
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          mb: 0.5,
+                        }}
+                      >
+                        Current files:
+                      </Typography>
+                      {data.files.map((file, index) => (
+                        <Typography
+                          key={`${file.name}-${index}`}
+                          sx={{ fontSize: "13px", }}
+                        >
+                          •{" "}
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: colors.primary,
+                              textDecoration: "none",
+                            }}
+                          >
+                            {file.name}
+                          </a>
+                        </Typography>
+                      ))}
+                    </Box>
                   )}
                 </Box>
               )}
@@ -264,7 +308,7 @@ function ProjectDialog({
               type={"text"}
               rows={3}
               {...register("description", {
-                required: "Company is required",
+                required: "Description is required",
               })}
               error={!!errors.description}
               helperText={errors.description?.message}

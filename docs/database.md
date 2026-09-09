@@ -32,7 +32,6 @@ The application uses references between collections instead of embedding related
 
 # 2. Entity Relationship Diagram
 
-```text
                          ┌─────────────────┐
                          │      User       │
                          ├─────────────────┤
@@ -65,7 +64,6 @@ The application uses references between collections instead of embedding related
                    │ clientId
                    │
                    └─────────────── 1 : N
-```
 
 ---
 

@@ -42,9 +42,11 @@ export const createClientController = async (
   }
 
   try {
+    const files = (req.files ?? []) as Express.Multer.File[];
     const client = await createClient(
       validationResult.data,
-      req.userId
+      req.userId,
+      files
     );
 
     sendResponse({
@@ -126,10 +128,12 @@ export const updateClientController = async (
   }
 
   try {
+    const files = (req.files ?? []) as Express.Multer.File[];
     const client = await updateClient(
       String(req.params.id),
       validationResult.data,
-      req.userId
+      req.userId,
+      files
     );
 
     if (!client) {

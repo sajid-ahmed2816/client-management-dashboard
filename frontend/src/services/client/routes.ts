@@ -7,7 +7,7 @@ const routes: {
 } = {
   createClient: "/clients",
   getClients: "/clients",
-  updateClient: (id: string) => `/clients/${id}`,
+  updateClient: (id: string) => `/clients/${id}/update`,
   deleteClient: (id: string) => `/clients/${id}`,
   getClientById: (id: string) => `/clients/${id}`,
 };

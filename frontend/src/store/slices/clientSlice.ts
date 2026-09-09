@@ -1,11 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ClientServices from "../../services/client/services";
+import type { FileType } from "./projectSlice";
 
 export interface ClientType {
   id: string;
   name: string;
   email: string;
   company: string;
+  files: FileType[]
 };
 
 interface ClientState {
@@ -22,7 +24,7 @@ const initialState: ClientState = {
 
 export const createClient = createAsyncThunk<
   ClientType,
-  { name: string; email: string; company: string; },
+  FormData,
   { rejectValue: string }
 >("clients/createClient", async (data, { rejectWithValue }) => {
   try {
@@ -58,11 +60,11 @@ export const getClients = createAsyncThunk<
 
 export const updateClient = createAsyncThunk<
   ClientType,
-  { id: string; name: string; email: string; company: string; },
+  { id: string; data: FormData },
   { rejectValue: string }
->("clients/updateClient", async (data, { rejectWithValue }) => {
+>("clients/updateClient", async ({ id, data }, { rejectWithValue }) => {
   try {
-    const response = await ClientServices.updateClient(data, data.id);
+    const response = await ClientServices.updateClient(data, id);
 
     return response.data.client
   } catch (error) {

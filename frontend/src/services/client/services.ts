@@ -1,8 +1,8 @@
 import routes from "./routes";
-import { post, get, patch, deleted } from "../index";
+import { post, get, deleted } from "../index";
 
 const ClientServices = {
-  createClient: async (data: object) => {
+  createClient: async (data: FormData) => {
     const result = await post(routes.createClient, data);
     return result;
   },
@@ -17,8 +17,8 @@ const ClientServices = {
     return result;
   },
 
-  updateClient: async (data: object, id: string) => {
-    const result = await patch(routes.updateClient(id), data);
+  updateClient: async (data: FormData, id: string) => {
+    const result = await post(routes.updateClient(id), data);
     return result;
   },
 

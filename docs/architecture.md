@@ -1,11 +1,19 @@
-# Architecture
+# System Architecture
 
-## Backend Startup Flow
+## 1. Overview
 
-The backend separates application configuration from server startup.
+## 2. High-Level Architecture
 
-- `app.ts` is responsible for configuring the Express application, middleware, and routes.
-- `server.ts` is responsible for starting the application and establishing the required infrastructure connections.
-- Database connectivity is kept in a dedicated configuration module.
+## 3. Frontend Architecture
 
-This separation keeps the application modular and makes the backend easier to test and maintain.
+## 4. Backend Architecture
+
+## 5. Request Lifecycle
+
+## 6. Authentication Flow
+
+## 7. File Upload Flow
+
+## 8. Data Flow
+
+## 9. Deployment Architecture

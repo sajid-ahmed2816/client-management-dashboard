@@ -41,10 +41,11 @@ export const createProjectController = async (
   };
 
   try {
+    const files = (req.files ?? []) as Express.Multer.File[];
     const project = await createProject(
       validationResult.data,
       req.userId,
-      req.file
+      files
     );
 
     sendResponse({
@@ -189,11 +190,12 @@ export const updateProjectController = async (
   }
 
   try {
+    const files = (req.files ?? []) as Express.Multer.File[];
     const project = await updateProject(
       String(req.params.id),
       validationResult.data,
       req.userId,
-      req.file
+      files
     );
 
     if (!project) {

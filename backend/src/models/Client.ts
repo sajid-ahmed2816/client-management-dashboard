@@ -1,9 +1,12 @@
 import mongoose, { Document, Schema } from "mongoose";
+import FileSchema from "./File.js";
+import type { FileType } from "./File.js";
 
 export interface IClient extends Document {
   name: string;
   email: string;
   company?: string;
+  files: FileType[];
   createdBy: mongoose.Types.ObjectId;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +30,11 @@ const clientSchema = new Schema<IClient>(
     company: {
       type: String,
       trim: true,
+    },
+
+    files: {
+      type: [FileSchema],
+      default: [],
     },
 
     createdBy: {

@@ -1,11 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
-
-interface FileType {
-  path: string;
-  name: string;
-  url: string;
-  resourceType?: string;
-}
+import FileSchema from "./File.js";
+import type { FileType } from "./File.js";
 
 export type ProjectStatus = "pending" | "in-progress" | "completed";
 
@@ -14,11 +9,11 @@ export interface IProject extends Document {
   description?: string;
   status: ProjectStatus;
   clientId: mongoose.Types.ObjectId;
-  file?: FileType;
+  files: FileType[];
   createdBy: mongoose.Types.ObjectId;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 const projectSchema = new Schema<IProject>(
   {
@@ -48,16 +43,9 @@ const projectSchema = new Schema<IProject>(
       required: [true, "Client is required"],
     },
 
-    file: {
-      path: {
-        type: String,
-      },
-      name: {
-        type: String,
-      },
-      url: {
-        type: String,
-      },
+    files: {
+      type: [FileSchema],
+      default: [],
     },
 
     createdBy: {

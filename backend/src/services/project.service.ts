@@ -13,7 +13,7 @@ import {
 export const createProject = async (
   input: ProjectInput,
   userId: string,
-  file?: Express.Multer.File
+  files: Express.Multer.File[] = []
 ) => {
   const project = await Project.create({
     name: input.name,
@@ -24,22 +24,25 @@ export const createProject = async (
   });
 
   try {
-    if (file) {
+    if (files.length > 0) {
+      const uploadedFiles = [];
       const filePath = `projects/${project._id.toString()}`;
-      const fileName = file.originalname;
+      for (const file of files) {
+        const fileName = file.originalname;
+        const publicId = `${filePath}/${fileName}`;
+        const uploadedFile = await uploadToCloudinary(
+          file.buffer,
+          publicId
+        );
+        uploadedFiles.push({
+          path: filePath,
+          name: fileName,
+          url: uploadedFile.secure_url,
+          resourceType: uploadedFile.resource_type,
+        });
+      }
 
-      const publicId = `${filePath}/${fileName}`;
-
-      const uploadedFile = await uploadToCloudinary(
-        file.buffer,
-        publicId
-      );
-
-      project.file = {
-        path: filePath,
-        name: fileName,
-        url: uploadedFile.secure_url
-      };
+      project.files = uploadedFiles;
 
       await project.save();
     }
@@ -65,7 +68,7 @@ export const createProject = async (
         email: client.email,
         company: client.company,
       },
-      file: project.file,
+      files: project.files,
       createdBy: project.createdBy.toString(),
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
@@ -139,7 +142,7 @@ export const getProjects = async (
         email: client.email,
         company: client.company
       },
-      file: project.file,
+      files: project.files,
       createdBy: project.createdBy.toString(),
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
@@ -176,7 +179,7 @@ export const updateProject = async (
   projectId: string,
   input: UpdateProjectInput,
   userId: string,
-  file?: Express.Multer.File,
+  files: Express.Multer.File[] = [],
 ) => {
   const project = await Project.findOne({
     _id: projectId,
@@ -200,24 +203,33 @@ export const updateProject = async (
 
   Object.assign(project, input);
 
-  if (file) {
-    const filePath = project.file?.path
+  if (files.length > 0) {
+    const filePath = project.files?.[0]?.path
       ?? `projects/${project._id.toString()}`;
 
-    const fileName = file.originalname;
+    const uploadedFiles = [];
 
-    const publicId = `${filePath}/${fileName}`;
+    for (const file of files) {
+      const fileName = file.originalname;
+      const publicId = `${filePath}/${fileName}`;
 
-    const uploadedFile = await uploadToCloudinary(
-      file.buffer,
-      publicId
-    );
+      const uploadedFile = await uploadToCloudinary(
+        file.buffer,
+        publicId
+      );
 
-    project.file = {
-      path: filePath,
-      name: fileName,
-      url: uploadedFile.secure_url
-    };
+      uploadedFiles.push({
+        path: filePath,
+        name: fileName,
+        url: uploadedFile.secure_url,
+        resourceType: uploadedFile.resource_type,
+      });
+    }
+
+    project.files = [
+      ...(project.files ?? []),
+      ...uploadedFiles,
+    ];
   }
 
   await project.save();
@@ -247,7 +259,7 @@ export const updateProject = async (
       email: client.email,
       company: client.company,
     },
-    file: updatedProject.file,
+    files: updatedProject.files,
     createdBy: updatedProject.createdBy.toString(),
     createdAt: updatedProject.createdAt,
     updatedAt: updatedProject.updatedAt,
@@ -267,14 +279,16 @@ export const deleteProject = async (
     return null;
   }
 
-  if (project.file) {
-    const publicId = `${project.file.path}/${project.file.name}`;
-
-    try {
-      await deleteFromCloudinary(publicId, project.file.resourceType);
-    } catch (error) {
-      console.error("Cloudinary file deletion failed:", error);
+  if (project.files.length) {
+    for (const file of project.files) {
+      const publicId = `${file.path}/${file.name}`;
+      try {
+        await deleteFromCloudinary(publicId, file.resourceType);
+      } catch (error) {
+        console.error("Cloudinary file deletion failed:", error);
+      }
     }
+
   }
 
   await Project.findByIdAndDelete(project._id);

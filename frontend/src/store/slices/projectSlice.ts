@@ -2,6 +2,13 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ProjectServices from "../../services/project/services";
 import type { ClientType } from "../slices/clientSlice";
 
+export interface FileType {
+  path: string;
+  name: string;
+  url: string;
+  resourceType: string;
+}
+
 export interface ProjectType {
   id: string;
   name: string;
@@ -9,7 +16,7 @@ export interface ProjectType {
   status: string;
   clientId: string;
   client: ClientType;
-  file: any
+  files: FileType[]
 };
 
 interface ProjectState {

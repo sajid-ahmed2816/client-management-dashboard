@@ -11,10 +11,10 @@ import { upload } from "../middleware/upload.middleware.js";
 
 const router = Router();
 
-router.post("/", authMiddleware, upload.single("file"), createProjectController);
+router.post("/", authMiddleware, upload.array("files", 5), createProjectController);
 router.get("/", authMiddleware, getProjectsController);
 router.get("/:id", authMiddleware, getProjectByIdController);
-router.post("/:id/update", authMiddleware, upload.single("file"), updateProjectController);
+router.post("/:id/update", authMiddleware, upload.array("files", 5), updateProjectController);
 router.delete("/:id", authMiddleware, deleteProjectController);
 
 export default router;
