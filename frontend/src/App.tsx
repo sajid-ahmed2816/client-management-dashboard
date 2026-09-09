@@ -25,12 +25,12 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Routes>
-        <Route element={isAuthenticated ? <Navigate to={"/dashboard"} replace /> : <Outlet />}>
+        <Route path="/" element={isAuthenticated ? <Navigate to={"/dashboard"} replace /> : <Outlet />}>
           {publicRoutes.map((route) => (
             <Route key={route.path} path={route.path} element={route.component} />
           ))}
         </Route>
-        <Route element={isAuthenticated ? <Layout /> : <Navigate to={"/login"} replace />}>
+        <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to={"/login"} replace />}>
           {adminRoutes.map((route) => (
             <Route key={route.path} path={route.path} element={route.component} />
           ))}
