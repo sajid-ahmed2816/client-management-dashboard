@@ -7,13 +7,14 @@ import {
   deleteProjectController
 } from "../controllers/project.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
+import { upload } from "../middleware/upload.middleware.js";
 
 const router = Router();
 
-router.post("/", authMiddleware, createProjectController);
+router.post("/", authMiddleware, upload.single("file"), createProjectController);
 router.get("/", authMiddleware, getProjectsController);
 router.get("/:id", authMiddleware, getProjectByIdController);
-router.patch("/:id", authMiddleware, updateProjectController);
+router.patch("/:id", authMiddleware, upload.single("file"), updateProjectController);
 router.delete("/:id", authMiddleware, deleteProjectController);
 
 export default router;

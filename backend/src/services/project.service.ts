@@ -5,10 +5,15 @@ import {
   ProjectInput,
   UpdateProjectInput,
 } from "../validators/project.validator.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary
+} from "../utils/uploadToCloudinary.js";
 
 export const createProject = async (
   input: ProjectInput,
-  userId: string
+  userId: string,
+  file?: Express.Multer.File
 ) => {
   const project = await Project.create({
     name: input.name,
@@ -18,16 +23,57 @@ export const createProject = async (
     createdBy: userId,
   });
 
-  return {
-    id: project._id.toString(),
-    name: project.name,
-    description: project.description,
-    status: project.status,
-    clientId: project.clientId.toString(),
-    createdBy: project.createdBy.toString(),
-    createdAt: project.createdAt,
-    updatedAt: project.updatedAt,
-  };
+  try {
+    if (file) {
+      const filePath = `projects/${project._id.toString()}`;
+      const fileName = file.originalname;
+
+      const publicId = `${filePath}/${fileName}`;
+
+      const uploadedFile = await uploadToCloudinary(
+        file.buffer,
+        publicId
+      );
+
+      project.file = {
+        path: filePath,
+        name: fileName,
+        url: uploadedFile.secure_url
+      };
+
+      await project.save();
+    }
+
+    await project.populate("clientId", "name email company");
+
+    const client = project.clientId as unknown as {
+      _id: mongoose.Types.ObjectId;
+      name: string;
+      email: string;
+      company: string;
+    };
+
+    return {
+      id: project._id.toString(),
+      name: project.name,
+      description: project.description,
+      status: project.status,
+      clientId: client._id.toString(),
+      client: {
+        id: client._id.toString(),
+        name: client.name,
+        email: client.email,
+        company: client.company,
+      },
+      file: project.file,
+      createdBy: project.createdBy.toString(),
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+    };
+  } catch (error) {
+    await Project.findByIdAndDelete(project._id);
+    throw error;
+  }
 };
 
 export const getProjects = async (
@@ -93,6 +139,7 @@ export const getProjects = async (
         email: client.email,
         company: client.company
       },
+      file: project.file,
       createdBy: project.createdBy.toString(),
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
@@ -128,7 +175,8 @@ export const getProjectById = async (
 export const updateProject = async (
   projectId: string,
   input: UpdateProjectInput,
-  userId: string
+  userId: string,
+  file?: Express.Multer.File,
 ) => {
   const project = await Project.findOne({
     _id: projectId,
@@ -152,17 +200,57 @@ export const updateProject = async (
 
   Object.assign(project, input);
 
+  if (file) {
+    const filePath = project.file?.path
+      ?? `projects/${project._id.toString()}`;
+
+    const fileName = file.originalname;
+
+    const publicId = `${filePath}/${fileName}`;
+
+    const uploadedFile = await uploadToCloudinary(
+      file.buffer,
+      publicId
+    );
+
+    project.file = {
+      path: filePath,
+      name: fileName,
+      url: uploadedFile.secure_url
+    };
+  }
+
   await project.save();
 
+  const updatedProject = await Project.findById(project._id)
+    .populate("clientId", "name email company");
+
+  if (!updatedProject) { return null; }
+
+  const client = updatedProject.clientId as unknown as {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+    email: string;
+    company: string;
+  };
+
   return {
-    id: project._id.toString(),
-    name: project.name,
-    description: project.description,
-    status: project.status,
-    clientId: project.clientId.toString(),
-    createdBy: project.createdBy.toString(),
-    createdAt: project.createdAt,
-    updatedAt: project.updatedAt,
+    id: updatedProject._id.toString(),
+    name: updatedProject.name,
+    description:
+      updatedProject.description,
+    status: updatedProject.status,
+    clientId: client._id.toString(),
+    client: {
+      id: client._id.toString(),
+      name: client.name,
+      email: client.email,
+      company: client.company,
+    },
+    file: updatedProject.file,
+    createdBy: updatedProject.createdBy.toString(),
+    createdAt: updatedProject.createdAt,
+    updatedAt: updatedProject.updatedAt,
   };
 };
 
@@ -170,7 +258,7 @@ export const deleteProject = async (
   projectId: string,
   userId: string
 ) => {
-  const project = await Project.findOneAndDelete({
+  const project = await Project.findOne({
     _id: projectId,
     createdBy: userId,
   });
@@ -178,6 +266,18 @@ export const deleteProject = async (
   if (!project) {
     return null;
   }
+
+  if (project.file) {
+    const publicId = `${project.file.path}/${project.file.name}`;
+
+    try {
+      await deleteFromCloudinary(publicId, project.file.resourceType);
+    } catch (error) {
+      console.error("Cloudinary file deletion failed:", error);
+    }
+  }
+
+  await Project.findByIdAndDelete(project._id);
 
   return {
     id: project._id.toString(),

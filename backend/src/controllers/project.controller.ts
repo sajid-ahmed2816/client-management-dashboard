@@ -43,7 +43,8 @@ export const createProjectController = async (
   try {
     const project = await createProject(
       validationResult.data,
-      req.userId
+      req.userId,
+      req.file
     );
 
     sendResponse({
@@ -191,7 +192,8 @@ export const updateProjectController = async (
     const project = await updateProject(
       String(req.params.id),
       validationResult.data,
-      req.userId
+      req.userId,
+      req.file
     );
 
     if (!project) {
