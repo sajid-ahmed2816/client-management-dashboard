@@ -207,7 +207,7 @@ function ClientDialog({ isOpen, handleClose, data, }: ClientProps) {
                     </Box>
                   )}
                   {/* Existing files */}
-                  {data && data.files.length > 0 && (
+                  {data && data?.files?.length > 0 && (
                     <Box sx={{ mt: 1 }}>
                       <Typography
                         sx={{
@@ -217,7 +217,7 @@ function ClientDialog({ isOpen, handleClose, data, }: ClientProps) {
                       >
                         Current files:
                       </Typography>
-                      {data.files.map((file, index) => (
+                      {data?.files?.map((file, index) => (
                         <Typography
                           key={`${file.name}-${index}`}
                           sx={{ fontSize: "13px", }}
