@@ -8,34 +8,24 @@ import projectRoutes from "./routes/project.routes.js";
 
 const app = express();
 
-const allowedOrigins = (process.env.FRONTEND_URLS ?? "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-
-console.log("FRONTEND_URLS:", process.env.FRONTEND_URLS);
-console.log("Allowed Origins:", allowedOrigins);
+const allowedOrigins = (process.env.FRONTEND_URLS ?? "").split(",")
+  .map((origin) => origin.trim()).filter(Boolean)
 
 app.use(helmet());
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log("Request Origin:", origin);
-
       if (!origin) {
         callback(null, true);
         return;
-      }
+      };
 
       if (allowedOrigins.includes(origin)) {
-        console.log("CORS Allowed:", origin);
         callback(null, true);
         return;
-      }
-
-      console.log("CORS Rejected:", origin);
-      callback(new Error("Not allowed by CORS"));
+      };
+      callback(new Error("not allowed by CORS"))
     },
     credentials: true,
   })
