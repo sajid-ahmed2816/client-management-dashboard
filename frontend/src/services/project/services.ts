@@ -1,5 +1,5 @@
 import routes from "./routes";
-import { post, get, patch, deleted } from "../index";
+import { post, get, deleted } from "../index";
 
 const ProjectServices = {
   createProject: async (data: FormData) => {
